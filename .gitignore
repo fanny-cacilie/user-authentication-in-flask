@@ -1,0 +1,21 @@
+.vscode
+\.idea/
+
+_build/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.pytest_cache
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+unittest.xml
+
+.env
+
+venv/
