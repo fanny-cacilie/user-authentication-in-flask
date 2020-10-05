@@ -1,13 +1,11 @@
 """
 libs.strings
-
-By default, uses `en-gb.json` file inside the `strings` top-level folder.
-
+By default, uses `en-us.json` file inside the `strings` top-level folder.
 If language changes, set `libs.strings.default_locale` and run `libs.strings.refresh()`.
 """
 import json
 
-default_locale = "en-gb"
+default_locale = "en-us"
 cached_strings = {}
 
 
