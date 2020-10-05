@@ -9,19 +9,12 @@ from flask_jwt_extended import (
 )
 from marshmallow import ValidationError
 from blacklist import BLACKLIST
+from security import encrypt_password, check_encrypted_password
+
+from libs.strings import gettext
 
 from app.modules.users.models_users import UserModel
 from app.modules.users.schema_users import UserSchema
-
-from security import encrypt_password, check_encrypted_password
-
-USER_NOT_FOUND = "User not found."
-USER_CREATED = "User created successfully."
-ERROR_SAVING = "An error occurred saving the user."
-USER_ALREADY_EXISTS = "An user with name already exists."
-USER_DELETED = "User deleted successfully."
-INVALID_CREDENTIALS = "Invalid credentials."
-USER_LOGGED_OUT = "User <id={}> successfully logged out."
 
 
 user_schema = UserSchema()
@@ -31,62 +24,76 @@ user_list_schema = UserSchema(many=True)
 class UserRegister(Resource):
     @classmethod
     def post(cls):
+
         try:
             user = user_schema.load(request.get_json())
-        except ValidationError as err:
-            return err.messages, 400
 
-        if UserModel.find_by_username(user.username):
-            return {"message": USER_ALREADY_EXISTS}, 400
+            if UserModel.find_by_username(user.username):
+                return {"message": gettext("user_username_exists")}, 400
 
-        try:
             user.password = encrypt_password(user.password)
-        except:
-            return {"message": "An error occurred while encrypting password."}
-
-        try:
             user.save_to_db()
-            return {"message": USER_CREATED}, 201
+            return {"message": gettext("user_registered")}, 201
+
         except:
-            return {"message": ERROR_SAVING}, 500
+            return {"message": gettext("user_error_creating")}, 500
 
 
 class User(Resource):
     @classmethod
+    @jwt_required
     def get(cls, user_id):
-        user = UserModel.find_by_id(user_id)
-        if user:
-            return user_schema.dump(user), 200
-        return {"message": USER_NOT_FOUND}, 404
+
+        try:
+            user = UserModel.find_by_id(user_id)
+            if user:
+                return user_schema.dump(user), 200
+            return {"message": gettext("user_not_found")}, 404
+        except:
+            return {"message": gettext("user_error_reading.")}, 500
 
     @classmethod
+    @jwt_required
     def put(cls, user_id):
-        user_json = request.get_json()
-        user = UserModel.find_by_id(user_id)
 
-        if user:
-            user.username = user_json["username"]
-        else:
-            return {"message": "An error occurre while updatig user."}, 500
+        try:
+            user_json = request.get_json()
+            user = UserModel.find_by_id(user_id)
 
-        user.save_to_db()
+            if user:
+                user.name = user_json["name"]
+            else:
+                return {"message": gettext("user_not_found")}, 404
 
-        return user_schema.dump(user), 200
+            user.save_to_db()
+
+            return user_schema.dump(user), 200
+
+        except:
+            return {"message": gettext("user_error_updating.")}, 500
 
     @classmethod
+    @jwt_required
     def delete(cls, user_id):
-        user = UserModel.find_by_id(user_id)
-        if user:
-            user.delete_from_db()
-            return {"message": USER_DELETED}, 200
-        return {"message": USER_NOT_FOUND}, 404
+        try:
+            user = UserModel.find_by_id(user_id)
+            if user:
+                user.delete_from_db()
+                return {"message": gettext("user_deleted")}, 200
+            return {"message": gettext("user_not_found")}, 404
+        except:
+            return {"message": gettext("user_error_deleting")}, 500
 
 
 class UserList(Resource):
     @classmethod
+    @jwt_required
     def get(cls):
-        users = user_list_schema.dump(UserModel.find_all())
-        return {"users": users}, 200
+        try:
+            users = user_list_schema.dump(UserModel.find_all())
+            return {"users": users}, 200
+        except:
+            return {"message": gettext("user_not_found")}
 
 
 class UserLogin(Resource):
@@ -98,27 +105,33 @@ class UserLogin(Resource):
         """
         try:
             user_json = request.get_json()
-            user_data = user_schema.load(user_json)
-        except ValidationError as err:
-            return err.messages, 400
+            user_data = user_schema.load(
+                user_json, partial=("name", "company_name", "email")
+            )
 
-        user = UserModel.find_by_username(user_data.username)
+            user = UserModel.find_by_username(user_data.username)
 
-        if not user:
-            return {"message": USER_NOT_FOUND.format(user_data["username"])}
+            if not user:
+                return {"message": gettext("user_not_found")}, 404
 
-        if check_encrypted_password(user_data.password, user.password):
-            access_token = create_access_token(identity=user.id, fresh=True)
-            return {"access_token": access_token}, 200
+            if check_encrypted_password(user_data.password, user.password):
+                access_token = create_access_token(identity=user.id, fresh=True)
+                return {"access_token": access_token}, 200
 
-        return {"message": INVALID_CREDENTIALS}, 401
+            return {"message": gettext("user_invalid_credentials")}, 401
+
+        except:
+            return {"message": gettext("user_error_logging_in")}, 500
 
 
 class UserLogout(Resource):
     @classmethod
     @jwt_required
     def post(cls):
-        jwt_id = get_raw_jwt()["jti"]
-        user_id = get_jwt_identity()
-        BLACKLIST.add(jwt_id)
-        return {"message": USER_LOGGED_OUT.format(user_id)}, 200
+        try:
+            jwt_id = get_raw_jwt()["jti"]
+            user_id = get_jwt_identity()
+            BLACKLIST.add(jwt_id)
+            return {"message": gettext("user_logged_out")}, 200
+        except:
+            return {"message": gettext("user_error_logging_out")}, 500

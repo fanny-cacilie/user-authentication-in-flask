@@ -1,0 +1,15 @@
+{
+    "user_username_exists": "A user with that username already exists.",
+    "user_email_exists": "A user with that email already exists.",
+    "user_not_found": "User not found.",
+    "user_registered": "Account created successfully.",
+    "user_deleted": "User deleted.",
+    "user_invalid_credentials": "Invalid credentials.",
+    "user_logged_out": "User successfully logged out.",
+    "user_error_creating": "Internal server error. Failed to create user.",
+    "user_error_reading": "Internal server error. Failed to read user(s).",
+    "user_error_updating": "Internal server error. Failed to update user.",
+    "user_error_deleting": "Internal server error. Failed to delete user.",
+    "user_error_logging_in": "Internal server error. Failed to log in user.",
+    "user_error_logging_out": "Internal server error. Failed to log out user."
+}
