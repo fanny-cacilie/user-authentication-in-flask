@@ -9,10 +9,9 @@ from flask_jwt_extended import (
 )
 from marshmallow import ValidationError
 from blacklist import BLACKLIST
-from security import encrypt_password, check_encrypted_password
 
-from libs.strings import gettext
-
+from app.security import encrypt_password, check_encrypted_password
+from app.libs.strings import gettext
 from app.modules.users.models_users import UserModel
 from app.modules.users.schema_users import UserSchema
 

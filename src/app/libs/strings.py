@@ -12,7 +12,7 @@ cached_strings = {}
 def refresh():
     print("Refreshing...")
     global cached_strings
-    with open(f"strings/{default_locale}.json") as f:
+    with open(f"app/strings/{default_locale}.json") as f:
         cached_strings = json.load(f)
 
 
