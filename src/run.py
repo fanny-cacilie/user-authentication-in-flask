@@ -28,7 +28,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["JWT_BLACKLIST_ENABLED"] = True
 app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access"]
-app.secret_key = "jwt__precious_key"
+app.secret_key = os.environ.get("SECRET_KEY")
 api = Api(app)
 
 jwt = JWTManager(app)
