@@ -21,5 +21,12 @@ Inside the directory, run:
 
 `python run.py`
 
-And you can test the Web API endpoints using Postman or Insomnia.
+
+## Testing
+
+Inside the directory, run:
+
+`python pytest`
+
+You can also test the Web API endpoints using Postman or similar.
 
